@@ -1,4 +1,4 @@
-use actix_web::{FromRequest, HttpRequest, dev::Payload};
+use actix_web::{FromRequest, HttpRequest, dev::Payload, web::Data};
 use crate::types::{DeviceToken, Device};
 use crate::errors::Error;
 use crate::database::Database;
@@ -26,7 +26,7 @@ impl Device {
             .ok_or(Error::AuthHeaderMalformed)?;
         let token = DeviceToken::from_base64(token_string)
             .map_err(Error::Base64DecodingError)?;
-        let db = req.app_data::<Database>()
+        let db = req.app_data::<Data<Database>>()
             .ok_or(Error::DatabaseNotPresent)?;
         Ok(db.get_device(token).await?)
     }

@@ -8,7 +8,7 @@ ST_Y(coordinates) AS latitude, elevation, time, device FROM points";
 const POINT_INSERTION: &str = "INSERT INTO points (owner, coordinates, elevation, time, device)
 VALUES ($1, ST_SetSRID(ST_MakePoint($2, $3), 4326), $4, $5, $6)";
 
-const DEVICE_QUERY: &str = "SELECT name, username FROM device";
+const DEVICE_QUERY: &str = "SELECT name, username FROM devices";
 
 #[derive(Clone)]
 pub struct Database(PgPool);

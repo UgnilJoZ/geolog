@@ -7,7 +7,7 @@ use actix_web::{
     middleware::Logger};
 use log::error;
 mod types;
-use types::{Point, PointRecord};
+use types::{Point, PointRecord, Device};
 mod errors;
 use errors::Error;
 mod database;
@@ -18,6 +18,7 @@ mod auth;
 async fn insert_points(
     Json(points): Json<Vec<Point>>,
     db: web::Data<Database>,
+    auth: Device,
 ) -> HttpResponse {
     match db.insert_points(points, "joz".to_string()).await {
         Ok(()) => HttpResponse::Created().into(),
@@ -29,7 +30,10 @@ async fn insert_points(
 }
 
 #[get("/points")]
-async fn get_points(db: web::Data<Database>) -> Result<Json<Vec<PointRecord>>, Error> {
+async fn get_points(
+    db: web::Data<Database>,
+    auth: Device,
+) -> Result<Json<Vec<PointRecord>>, Error> {
     Ok(Json(db.get_points().await?))
 }
 
