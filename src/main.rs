@@ -1,13 +1,15 @@
+
 use actix_web::{
     get,
     post,
     web,
-    web::Json, App, HttpResponse, HttpServer, Responder,
+    web::Json, App, HttpResponse, HttpServer,
     middleware::Logger};
-extern crate pretty_env_logger;
-#[macro_use] extern crate log;
+use log::error;
 mod types;
 use types::{Point, PointRecord};
+mod errors;
+use errors::Error;
 mod database;
 use database::Database;
 
@@ -23,8 +25,8 @@ async fn insert_points(Json(points): Json<Vec<Point>>, db: web::Data<Database>) 
 }
 
 #[get("/points")]
-async fn get_points(db: web::Data<Database>) -> Json<Vec<PointRecord>> {
-    Json(db.get_points().await.unwrap())
+async fn get_points(db: web::Data<Database>) -> Result<Json<Vec<PointRecord>>, Error> {
+    Ok(Json(db.get_points().await?))
 }
 
 #[actix_web::main]

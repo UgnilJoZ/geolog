@@ -1,10 +1,10 @@
 use serde::{Serialize, Deserialize};
 use sqlx::types::time::OffsetDateTime;
-use sqlx::{FromRow, postgres::PgRow, Row, Type, Postgres, postgres::PgTypeInfo};
+use sqlx::FromRow;
 
 /// WGS84 lon/lat tuple
 #[derive(Serialize, Deserialize)]
-pub struct Coordinates(f64, f64);
+pub struct Coordinates(pub f64, pub f64);
 
 impl Coordinates {
     pub fn longitude(&self) -> f64 {
@@ -13,18 +13,6 @@ impl Coordinates {
 
     pub fn latitude(&self) -> f64 {
         self.1
-    }
-}
-
-impl FromRow<'_, PgRow> for Coordinates {
-    fn from_row(row: &PgRow) -> Result<Self, sqlx::Error> {
-        Ok(Coordinates(row.try_get("longitude")?, row.try_get("latitude")?))
-    }
-}
-
-impl Type<Postgres> for Coordinates {
-    fn type_info() -> PgTypeInfo {
-        PgTypeInfo::with_name("geometry(Point,4326)")
     }
 }
 
@@ -42,17 +30,6 @@ pub struct Point {
     pub device: String,
 }
 
-impl FromRow<'_, PgRow> for Point {
-    fn from_row(row: &PgRow) -> Result<Self, sqlx::Error> {
-        Ok(Point {
-            coordinates: Coordinates::from_row(row)?,
-            elevation: row.try_get("elevation")?,
-            time: row.try_get("time")?,
-            device: row.try_get("device")?,
-        })
-    }
-}
-
 #[derive(Serialize, sqlx::FromRow)]
 pub struct PointRecord {
     pub id: PointId,
@@ -60,4 +37,10 @@ pub struct PointRecord {
     #[serde(flatten)]
     #[sqlx(flatten)]
     pub body: Point,
+}
+
+#[derive(FromRow)]
+pub struct Device {
+    pub name: String,
+    pub username: String,
 }
