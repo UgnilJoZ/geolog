@@ -700,6 +700,7 @@ name = "geolog"
 version = "0.1.0"
 dependencies = [
  "actix-web",
+ "base64 0.21.0",
  "geozero",
  "log",
  "pretty_env_logger",

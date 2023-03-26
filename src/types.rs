@@ -1,3 +1,4 @@
+use std::num::ParseIntError;
 use serde::{Serialize, Deserialize};
 use sqlx::types::time::OffsetDateTime;
 use sqlx::FromRow;
@@ -37,6 +38,17 @@ pub struct PointRecord {
     #[serde(flatten)]
     #[sqlx(flatten)]
     pub body: Point,
+}
+
+#[derive(Deserialize)]
+#[derive(sqlx::Type)]
+#[sqlx(transparent)]
+pub struct DeviceToken(Vec<u8>);
+
+impl DeviceToken {
+    pub fn from_base64(base64_string: impl AsRef<[u8]>) -> Result<Vec<u8>, base64::DecodeError> {
+        base64::decode(base64_string)
+    }
 }
 
 #[derive(FromRow)]

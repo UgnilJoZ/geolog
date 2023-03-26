@@ -1,12 +1,14 @@
 use sqlx::{Row, Postgres, Error, Type, FromRow};
 use sqlx::postgres::{PgTypeInfo, PgRow, PgPool};
-use crate::types::{PointRecord, Point, Coordinates};
+use crate::types::{PointRecord, Point, Coordinates, Device};
 
 const POINT_QUERY_BASE: &str = "SELECT id, owner, ST_X(coordinates) AS longitude,
 ST_Y(coordinates) AS latitude, elevation, time, device FROM points";
 
 const POINT_INSERTION: &str = "INSERT INTO points (owner, coordinates, elevation, time, device)
 VALUES ($1, ST_SetSRID(ST_MakePoint($2, $3), 4326), $4, $5, $6)";
+
+const DEVICE_QUERY: &str = "SELECT name, username FROM device";
 
 #[derive(Clone)]
 pub struct Database(PgPool);
@@ -39,6 +41,13 @@ impl Database {
                 .await?;
         }
         Ok(())
+    }
+
+    pub async fn get_device(&self, token: Vec<u8>) -> Result<Device, Error> {
+        let Database(pool) = self;
+        sqlx::query_as(DEVICE_QUERY)
+            .fetch_one(pool)
+            .await
     }
 }
 

@@ -12,9 +12,13 @@ mod errors;
 use errors::Error;
 mod database;
 use database::Database;
+mod auth;
 
 #[post("/points")]
-async fn insert_points(Json(points): Json<Vec<Point>>, db: web::Data<Database>) -> HttpResponse {
+async fn insert_points(
+    Json(points): Json<Vec<Point>>,
+    db: web::Data<Database>,
+) -> HttpResponse {
     match db.insert_points(points, "joz".to_string()).await {
         Ok(()) => HttpResponse::Created().into(),
         Err(e) => {

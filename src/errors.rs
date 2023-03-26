@@ -16,6 +16,12 @@ pub enum Error {
         user: String,
         resource: PathBuf,
     },
+    #[error("Error decoding base64 string: {0}")]
+    Base64DecodingError(base64::DecodeError),
+    #[error("Database pool not found")]
+    DatabaseNotPresent,
+    #[error("Authorization header was unexpected")]
+    AuthHeaderMalformed,
 }
 
 impl ResponseError for Error {
