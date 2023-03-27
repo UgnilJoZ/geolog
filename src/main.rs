@@ -1,4 +1,5 @@
-
+#[macro_use] extern crate serde_derive;
+extern crate serde_with;
 use actix_web::{
     get,
     post,
@@ -11,7 +12,7 @@ use types::{Point, PointRecord, Device};
 mod errors;
 use errors::Error;
 mod database;
-use database::Database;
+use database::{Database, PointFilter};
 mod auth;
 
 #[post("/points")]
@@ -33,8 +34,11 @@ async fn insert_points(
 async fn get_points(
     db: web::Data<Database>,
     auth: Device,
+    params: web::Query<PointFilter>,
 ) -> Result<Json<Vec<PointRecord>>, Error> {
-    Ok(Json(db.get_points().await?))
+    let web::Query(mut params) = params;
+    params.user = auth.username;
+    Ok(Json(db.get_points(&params).await?))
 }
 
 #[actix_web::main]

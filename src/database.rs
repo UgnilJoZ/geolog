@@ -1,6 +1,8 @@
-use sqlx::{Row, Postgres, Error, Type, FromRow};
+use sqlx::{Row, Postgres, Error, Type, FromRow, QueryBuilder};
 use sqlx::postgres::{PgTypeInfo, PgRow, PgPool};
 use crate::types::{PointRecord, Point, Coordinates, Device};
+use serde::Deserialize;
+use serde_with::{serde_as, DisplayFromStr};
 
 const POINT_QUERY_BASE: &str = "SELECT id, owner, ST_X(coordinates) AS longitude,
 ST_Y(coordinates) AS latitude, elevation, time, device FROM points";
@@ -8,7 +10,9 @@ ST_Y(coordinates) AS latitude, elevation, time, device FROM points";
 const POINT_INSERTION: &str = "INSERT INTO points (owner, coordinates, elevation, time, device)
 VALUES ($1, ST_SetSRID(ST_MakePoint($2, $3), 4326), $4, $5, $6)";
 
-const DEVICE_QUERY: &str = "SELECT name, username FROM devices";
+const DEVICE_QUERY: &str = "SELECT name, username FROM devices WHERE token = $1";
+
+const EPSG_PROJECTION: i32 = 4326;
 
 #[derive(Clone)]
 pub struct Database(PgPool);
@@ -20,9 +24,9 @@ impl Database {
             .map(Database)
     }
 
-    pub async fn get_points(&self) -> Result<Vec<PointRecord>, Error> {
+    pub async fn get_points(&self, filter: &PointFilter) -> Result<Vec<PointRecord>, Error> {
         let Database(pool) = self;
-        sqlx::query_as(POINT_QUERY_BASE)
+        filter.pg_selection().build_query_as()
             .fetch_all(pool)
             .await
     }
@@ -46,17 +50,60 @@ impl Database {
     pub async fn get_device(&self, token: Vec<u8>) -> Result<Device, Error> {
         let Database(pool) = self;
         sqlx::query_as(DEVICE_QUERY)
+            .bind(&token)
             .fetch_one(pool)
             .await
     }
 }
 
+#[serde_as]
+#[derive(Deserialize)]
+pub struct BoundingBox {
+    #[serde_as(as = "DisplayFromStr")]
+    pub minlon: f64,
+    #[serde_as(as = "DisplayFromStr")]
+    pub maxlon: f64,
+    #[serde_as(as = "DisplayFromStr")]
+    pub minlat: f64,
+    #[serde_as(as = "DisplayFromStr")]
+    pub maxlat: f64,
+}
+
+#[derive(Deserialize)]
 pub struct PointFilter {
-    minlon: f64,
-    maxlon: f64,
-    minlat: f64,
-    maxlat: f64,
-    device: Option<String>,
+    pub limit: Option<i64>,
+    #[serde(flatten)]
+    pub bbox: BoundingBox,
+    pub device: Option<String>,
+    #[serde(skip_deserializing)]
+    pub user: String,
+}
+
+impl PointFilter {
+    fn pg_selection(&self) -> QueryBuilder<Postgres> {
+        let mut query = QueryBuilder::new(POINT_QUERY_BASE);
+        query.push(" WHERE owner = ");
+        query.push_bind(&self.user);
+        if let Some(devicename) = &self.device {
+            query.push(" AND device = ");
+            query.push_bind(devicename);
+        }
+        let bbox = &self.bbox; {
+            query.push(" AND ST_Intersects(coordinates, ST_MakeEnvelope ( ");
+            let mut envelope = query.separated(", ");
+            envelope.push_bind(bbox.minlon);
+            envelope.push_bind(bbox.minlat);
+            envelope.push_bind(bbox.maxlon);
+            envelope.push_bind(bbox.maxlat);
+            envelope.push_bind(EPSG_PROJECTION);
+            query.push(" )::geography('POLYGON') )");
+        }
+        if let Some(limit) = self.limit {
+            query.push(" LIMIT ");
+            query.push_bind(limit);
+        }
+        query
+    }
 }
 
 impl FromRow<'_, PgRow> for Coordinates {

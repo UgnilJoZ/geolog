@@ -51,8 +51,10 @@ impl DeviceToken {
     }
 }
 
+#[derive(Deserialize)]
 #[derive(FromRow)]
 pub struct Device {
+    #[serde(rename = "device")]
     pub name: String,
     pub username: String,
 }
