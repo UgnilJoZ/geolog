@@ -1,4 +1,3 @@
-use std::num::ParseIntError;
 use serde::{Serialize, Deserialize};
 use sqlx::types::time::OffsetDateTime;
 use sqlx::FromRow;

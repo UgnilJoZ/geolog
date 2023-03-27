@@ -1,4 +1,3 @@
-extern crate serde_with;
 use actix_web::{
     get,
     post,
