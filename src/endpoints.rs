@@ -14,9 +14,9 @@ use crate::database::{Database, PointFilter};
 async fn insert_points(
     Json(points): Json<Vec<Point>>,
     db: web::Data<Database>,
-    _auth: Device,
+    auth: Device,
 ) -> HttpResponse {
-    match db.insert_points(points, "joz".to_string()).await {
+    match db.insert_points(points, auth.username).await {
         Ok(()) => HttpResponse::Created().into(),
         Err(e) => {
             error!("{}", e);
