@@ -1,4 +1,3 @@
-#[macro_use] extern crate serde_derive;
 extern crate serde_with;
 use actix_web::{
     get,

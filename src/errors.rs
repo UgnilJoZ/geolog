@@ -6,9 +6,9 @@ use thiserror::Error;
 #[derive(Debug, Error)]
 pub enum Error {
     #[error("Database error {0:?}")]
-    DbError(#[from] sqlx::Error),
-    #[error("Actix error {0:?}")]
-    ActixError(#[from] actix_web::Error),
+    Database(#[from] sqlx::Error),
+    #[error("Web error {0:?}")]
+    Web(#[from] actix_web::Error),
     #[error("User was not unauthenticated")]
     Unauthenticated,
     #[error("User {user} is not allowed to access the resource {resource}")]
