@@ -35,7 +35,9 @@ Each track is owned by a user. Other users may be allowed to see it.
 
 ### `GET /v1/points`
 #### Arguments
-fromdate, todate, device, minlat, maxlat, minlon, maxlon, limit
+fromdate, todate, device, minlat, maxlat, minlon, maxlon, limit.
+
+minlon,maxlon,minlat,maxlat can only be provided alltogether or be absent.
 #### JSON response body
 ```json
 [
