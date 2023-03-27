@@ -12,10 +12,7 @@ pub enum Error {
     #[error("User was not unauthenticated")]
     Unauthenticated,
     #[error("User {user} is not allowed to access the resource {resource}")]
-    Forbidden {
-        user: String,
-        resource: PathBuf,
-    },
+    Forbidden { user: String, resource: PathBuf },
     #[error("Error decoding base64 string: {0}")]
     Base64DecodingError(base64::DecodeError),
     #[error("Database pool not found")]
@@ -28,7 +25,7 @@ impl ResponseError for Error {
     fn status_code(&self) -> StatusCode {
         match self {
             Error::Unauthenticated => StatusCode::UNAUTHORIZED,
-            Error::Forbidden{..} => StatusCode::FORBIDDEN,
+            Error::Forbidden { .. } => StatusCode::FORBIDDEN,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }

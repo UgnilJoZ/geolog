@@ -1,4 +1,4 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use sqlx::types::time::OffsetDateTime;
 use sqlx::FromRow;
 
@@ -16,8 +16,7 @@ impl Coordinates {
     }
 }
 
-#[derive(Deserialize, Serialize)]
-#[derive(sqlx::Type)]
+#[derive(Deserialize, Serialize, sqlx::Type)]
 #[sqlx(transparent)]
 pub struct PointId(i64);
 
@@ -39,8 +38,7 @@ pub struct PointRecord {
     pub body: Point,
 }
 
-#[derive(Deserialize)]
-#[derive(sqlx::Type)]
+#[derive(Deserialize, sqlx::Type)]
 #[sqlx(transparent)]
 pub struct DeviceToken(Vec<u8>);
 
@@ -50,8 +48,7 @@ impl DeviceToken {
     }
 }
 
-#[derive(Deserialize)]
-#[derive(FromRow)]
+#[derive(Deserialize, FromRow)]
 pub struct Device {
     #[serde(rename = "device")]
     pub name: String,

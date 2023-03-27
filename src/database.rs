@@ -1,8 +1,8 @@
-use sqlx::{Row, Postgres, Error, Type, FromRow, QueryBuilder};
-use sqlx::postgres::{PgTypeInfo, PgRow, PgPool};
-use crate::types::{PointRecord, Point, Coordinates, Device};
+use crate::types::{Coordinates, Device, Point, PointRecord};
 use serde::Deserialize;
 use serde_with::{serde_as, DisplayFromStr};
+use sqlx::postgres::{PgPool, PgRow, PgTypeInfo};
+use sqlx::{Error, FromRow, Postgres, QueryBuilder, Row, Type};
 
 const POINT_QUERY_BASE: &str = "SELECT id, owner, ST_X(coordinates) AS longitude,
 ST_Y(coordinates) AS latitude, elevation, time, device FROM points";
@@ -26,9 +26,7 @@ impl Database {
 
     pub async fn get_points(&self, filter: &PointFilter) -> Result<Vec<PointRecord>, Error> {
         let Database(pool) = self;
-        filter.pg_selection().build_query_as()
-            .fetch_all(pool)
-            .await
+        filter.pg_selection().build_query_as().fetch_all(pool).await
     }
 
     pub async fn insert_points(&self, points: Vec<Point>, owner: String) -> Result<(), Error> {
@@ -108,7 +106,10 @@ impl PointFilter {
 
 impl FromRow<'_, PgRow> for Coordinates {
     fn from_row(row: &PgRow) -> Result<Self, sqlx::Error> {
-        Ok(Coordinates(row.try_get("longitude")?, row.try_get("latitude")?))
+        Ok(Coordinates(
+            row.try_get("longitude")?,
+            row.try_get("latitude")?,
+        ))
     }
 }
 

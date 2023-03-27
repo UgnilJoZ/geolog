@@ -1,17 +1,11 @@
-use actix_web::{
-    web,
-    App, HttpServer,
-    middleware::Logger};
-mod types;
-mod errors;
+use actix_web::{middleware::Logger, web, App, HttpServer};
 mod database;
+mod errors;
+mod types;
 use database::Database;
 mod auth;
 mod endpoints;
-use endpoints::{
-    insert_points,
-    get_points,
-};
+use endpoints::{get_points, insert_points};
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {

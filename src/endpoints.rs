@@ -1,14 +1,8 @@
-use actix_web::{
-    get,
-    post,
-    web,
-    web::Json,
-    HttpResponse,
-};
-use log::error;
-use crate::types::{Point, PointRecord, Device};
-use crate::errors::Error;
 use crate::database::{Database, PointFilter};
+use crate::errors::Error;
+use crate::types::{Device, Point, PointRecord};
+use actix_web::{get, post, web, web::Json, HttpResponse};
+use log::error;
 
 #[post("/points")]
 async fn insert_points(
