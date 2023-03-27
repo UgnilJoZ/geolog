@@ -73,7 +73,7 @@ pub struct BoundingBox {
 pub struct PointFilter {
     pub limit: Option<i64>,
     #[serde(flatten)]
-    pub bbox: BoundingBox,
+    pub bbox: Option<BoundingBox>,
     pub device: Option<String>,
     #[serde(skip_deserializing)]
     pub user: String,
@@ -88,7 +88,7 @@ impl PointFilter {
             query.push(" AND device = ");
             query.push_bind(devicename);
         }
-        let bbox = &self.bbox; {
+        if let Some(bbox) = &self.bbox {
             query.push(" AND ST_Intersects(coordinates, ST_MakeEnvelope ( ");
             let mut envelope = query.separated(", ");
             envelope.push_bind(bbox.minlon);
