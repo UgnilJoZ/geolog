@@ -26,3 +26,10 @@ CREATE TABLE tracks (
 	FOREIGN KEY (owner, device) REFERENCES devices(username, name),
 	PRIMARY KEY (owner, name)
 );
+
+-- Example:
+--
+--INSERT INTO devices VALUES(decode('6375367961685468', 'hex'), 'dev', 'joz');
+--
+-- You are now able to authenticate using 'Authorization: Token Y3U2eWFoVGgK'
+-- header.
