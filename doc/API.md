@@ -15,7 +15,7 @@ Each track is owned by a user. Other users may be allowed to see it.
 
 ## Authentication
 The `Authorization` header follows the form `Token abccdeff`, where `abccdeff`
-is the hex representation of a record ID in the `devices` table.
+is the base64 representation of a record ID in the `devices` table.
 
 ## Endpoints
 ### `POST /v1/points`
@@ -37,11 +37,19 @@ is the hex representation of a record ID in the `devices` table.
 }
 ```
 
+#### Example
+```sh
+curl -v -H "Content-Type: application/json" -X POST 127.1:8080/points  -H 'Authorization: Token Y3U2eWFoVGgK' -d '[{"coordinates": [3.0, 4.0],"time": "2017-12-24T18:21Z","elevation": 4,"device": "dev"}]'
+```
+
 ### `GET /v1/points`
 #### Arguments
-fromdate, todate, device, minlat, maxlat, minlon, maxlon, limit.
+min\_date, max\_date, device, minlat, maxlat, minlon, maxlon, limit.
 
 minlon,maxlon,minlat,maxlat can only be provided alltogether or be absent.
+
+Same with min\_date and max\_date.
+
 #### JSON response body
 ```json
 [
@@ -55,6 +63,11 @@ minlon,maxlon,minlat,maxlat can only be provided alltogether or be absent.
 ]
 ```
 
+#### Example
+```sh
+curl -v -H "Content-Type: application/json" -X GET '127.1:8080/points?device=dev&minlon=0.0&maxlon=8.0&minlat=0.0&maxlat=9.0'  -H 'Authorization: Token Y3U2eWFoVGgK' | jq
+```
+
 ### `PUT /v1/tracks/{name}`
 #### JSON request body
 ```json
@@ -63,6 +76,11 @@ minlon,maxlon,minlat,maxlat can only be provided alltogether or be absent.
     "min_date": "1970-01-01T00:00Z",
     "max_date": "1971-01-01T00:00Z"
 }
+```
+
+#### Example
+```sh
+curl -v -H "Content-Type: application/json" -X PUT 127.1:8080/tracks/track1  -H 'Authorization: Token Y3U2eWFoVGgK' -d '{"device":"dev","min_date": "1970-01-01T00:00Z","max_date": "2010-01-01T00:00Z"}
 ```
 
 ### `GET /v1/tracks/{name}`
@@ -85,4 +103,9 @@ This will include a point list like returned by `GET /v1/points`.
             "device": "mobile"
         }
     ]
+```
+
+#### Example
+```sh
+curl -v -H "Content-Type: application/json" 127.1:8080/tracks/track1 -H 'Authorization: Token Y3U2eWFoVGgK' | jq
 ```
