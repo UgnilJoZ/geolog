@@ -19,10 +19,10 @@ Each track is owned by a user. Other users may be allowed to see it.
 ```json
 [
     {
-        coordinates: [0.0, 1.0],
-        elevation: null,
-        time: "1970-01-01 00:00",
-        device: "mobile"
+        "coordinates": [0.0, 1.0],
+        "elevation": 4.0,
+        "time": "1970-01-01 00:00",
+        "device": "mobile"
     }
 ]
 ```
@@ -42,11 +42,11 @@ minlon,maxlon,minlat,maxlat can only be provided alltogether or be absent.
 ```json
 [
     {
-        id: 7005050,
-        coordinates: [0.0, 1.0],
-        elevation: null,
-        time: "1970-01-01 00:00",
-        device: "mobile"
+        "id": 7005050,
+        "coordinates": [0.0, 1.0],
+        "elevation": null,
+        "time": "1970-01-01 00:00",
+        "device": "mobile"
     }
 ]
 ```
