@@ -1,4 +1,4 @@
-use crate::types::{Coordinates, Device, Point, PointRecord, TrackSpec};
+use crate::types::{Coordinates, Device, Point, PointRecord, TimeRange, TrackSpec};
 use serde::Deserialize;
 use serde_with::{serde_as, DisplayFromStr};
 use sqlx::postgres::{PgPool, PgRow, PgTypeInfo};
@@ -65,8 +65,8 @@ impl Database {
             .bind(track.name)
             .bind(track.owner)
             .bind(track.spec.device)
-            .bind(track.spec.min_date)
-            .bind(track.spec.max_date)
+            .bind(track.spec.time.min_date)
+            .bind(track.spec.time.max_date)
             .execute(pool)
             .await?;
         Ok(())
@@ -102,6 +102,8 @@ pub struct PointFilter {
     pub device: Option<String>,
     #[serde(skip_deserializing)]
     pub user: String,
+    #[serde(flatten)]
+    pub time: Option<TimeRange>,
 }
 
 impl PointFilter {
@@ -112,6 +114,12 @@ impl PointFilter {
         if let Some(devicename) = &self.device {
             query.push(" AND device = ");
             query.push_bind(devicename);
+        }
+        if let Some(time) = &self.time {
+            query.push(" AND time BETWEEN ");
+            query.push_bind(time.min_date);
+            query.push(" AND ");
+            query.push_bind(time.max_date);
         }
         if let Some(bbox) = &self.bbox {
             query.push(" AND ST_Intersects(coordinates, ST_MakeEnvelope ( ");
@@ -172,6 +180,7 @@ impl From<TrackDefinition> for PointFilter {
             bbox: None,
             device: Some(track.spec.device),
             user: track.owner,
+            time: Some(track.spec.time),
         }
     }
 }

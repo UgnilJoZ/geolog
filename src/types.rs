@@ -56,12 +56,19 @@ pub struct Device {
 }
 
 #[derive(Clone, Serialize, Deserialize, FromRow)]
-pub struct TrackSpec {
-    pub device: String,
+pub struct TimeRange {
     #[serde(with = "time::serde::iso8601")]
     pub min_date: OffsetDateTime,
     #[serde(with = "time::serde::iso8601")]
     pub max_date: OffsetDateTime,
+}
+
+#[derive(Clone, Serialize, Deserialize, FromRow)]
+pub struct TrackSpec {
+    pub device: String,
+    #[serde(flatten)]
+    #[sqlx(flatten)]
+    pub time: TimeRange,
 }
 
 #[derive(Serialize)]
