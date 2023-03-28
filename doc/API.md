@@ -25,7 +25,7 @@ is the hex representation of a record ID in the `devices` table.
     {
         "coordinates": [0.0, 1.0],
         "elevation": 4.0,
-        "time": "1970-01-01 00:00",
+        "time": "1970-01-01T00:00Z",
         "device": "mobile"
     }
 ]
@@ -49,7 +49,7 @@ minlon,maxlon,minlat,maxlat can only be provided alltogether or be absent.
         "id": 7005050,
         "coordinates": [0.0, 1.0],
         "elevation": null,
-        "time": "1970-01-01 00:00",
+        "time": "1970-01-01T00:00Z",
         "device": "mobile"
     }
 ]
@@ -59,8 +59,9 @@ minlon,maxlon,minlat,maxlat can only be provided alltogether or be absent.
 #### JSON request body
 ```json
 {
-    "min_date": "1970-01-01 00:00",
-    "max_date": "1971-01-01 00:00"
+    "device": "mobile",
+    "min_date": "1970-01-01T00:00Z",
+    "max_date": "1971-01-01T00:00Z"
 }
 ```
 
@@ -71,7 +72,8 @@ This will include a point list like returned by `GET /v1/points`.
 ```json
 {
     "definition": {
-        "from": "1970-01-01 00:00",
+        "device": "mobile",
+        "from": "1970-01-01T00:00Z",
         "to": "1971-01-01 00:00"
     },
     "points": [
@@ -79,7 +81,7 @@ This will include a point list like returned by `GET /v1/points`.
             "id": 7005050,
             "coordinates": [0.0, 1.0],
             "elevation": null,
-            "time": "1970-01-01 00:00",
+            "time": "1970-01-01T00:00Z",
             "device": "mobile"
         }
     ]

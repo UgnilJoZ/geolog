@@ -5,7 +5,7 @@ mod types;
 use database::Database;
 mod auth;
 mod endpoints;
-use endpoints::{get_points, insert_points};
+use endpoints::{get_points, insert_points, get_track, insert_track};
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -17,6 +17,8 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(db.clone()))
             .service(insert_points)
             .service(get_points)
+            .service(get_track)
+            .service(insert_track)
     })
     .bind(("127.0.0.1", 8080))?
     .run()

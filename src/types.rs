@@ -54,3 +54,19 @@ pub struct Device {
     pub name: String,
     pub username: String,
 }
+
+#[derive(Clone, Serialize, Deserialize, FromRow)]
+pub struct TrackSpec {
+    pub device: String,
+    #[serde(with = "time::serde::iso8601")]
+    pub min_date: OffsetDateTime,
+    #[serde(with = "time::serde::iso8601")]
+    pub max_date: OffsetDateTime,
+}
+
+#[derive(Serialize)]
+pub struct Track {
+    pub definition: TrackSpec,
+    pub points: Vec<PointRecord>,
+}
+

@@ -1,4 +1,4 @@
-use crate::types::{Coordinates, Device, Point, PointRecord};
+use crate::types::{Coordinates, Device, Point, PointRecord, TrackSpec};
 use serde::Deserialize;
 use serde_with::{serde_as, DisplayFromStr};
 use sqlx::postgres::{PgPool, PgRow, PgTypeInfo};
@@ -11,6 +11,12 @@ const POINT_INSERTION: &str = "INSERT INTO points (owner, coordinates, elevation
 VALUES ($1, ST_SetSRID(ST_MakePoint($2, $3), 4326), $4, $5, $6)";
 
 const DEVICE_QUERY: &str = "SELECT name, username FROM devices WHERE token = $1";
+
+const TRACK_INSERTION: &str = "INSERT INTO tracks(name, owner, device, min_date, max_date)
+VALUES ($1, $2, $3, $4, $5)";
+
+const TRACK_QUERY: &str = "SELECT name, owner, device, min_date, max_date FROM tracks
+WHERE NAME = $1";
 
 const EPSG_PROJECTION: i32 = 4326;
 
@@ -49,6 +55,27 @@ impl Database {
         let Database(pool) = self;
         sqlx::query_as(DEVICE_QUERY)
             .bind(&token)
+            .fetch_one(pool)
+            .await
+    }
+
+    pub async fn insert_track(&self, track: TrackDefinition) -> Result<(), Error> {
+        let Database(pool) = self;
+        sqlx::query(TRACK_INSERTION)
+            .bind(track.name)
+            .bind(track.owner)
+            .bind(track.spec.device)
+            .bind(track.spec.min_date)
+            .bind(track.spec.max_date)
+            .execute(pool)
+            .await?;
+        Ok(())
+    }
+
+    pub async fn get_track(&self, track_name: String) -> Result<TrackDefinition, Error> {
+        let Database(pool) = self;
+        sqlx::query_as(TRACK_QUERY)
+            .bind(track_name)
             .fetch_one(pool)
             .await
     }
@@ -129,3 +156,23 @@ impl FromRow<'_, PgRow> for Point {
         })
     }
 }
+
+#[derive(Clone, FromRow)]
+pub struct TrackDefinition {
+    pub name: String,
+    pub owner: String,
+    #[sqlx(flatten)]
+    pub spec: TrackSpec,
+}
+
+impl From<TrackDefinition> for PointFilter {
+    fn from(track: TrackDefinition) -> PointFilter {
+        PointFilter {
+            limit: None,
+            bbox: None,
+            device: Some(track.spec.device),
+            user: track.owner,
+        }
+    }
+}
+
