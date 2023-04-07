@@ -16,7 +16,7 @@ const TRACK_INSERTION: &str = "INSERT INTO tracks(name, owner, device, min_date,
 VALUES ($1, $2, $3, $4, $5)";
 
 const TRACK_QUERY: &str = "SELECT name, owner, device, min_date, max_date FROM tracks
-WHERE NAME = $1";
+WHERE name = $1 AND owner = $2";
 
 const EPSG_PROJECTION: i32 = 4326;
 
@@ -72,10 +72,11 @@ impl Database {
         Ok(())
     }
 
-    pub async fn get_track(&self, track_name: String) -> Result<TrackDefinition, Error> {
+    pub async fn get_track(&self, name: String, owner: String) -> Result<TrackDefinition, Error> {
         let Database(pool) = self;
         sqlx::query_as(TRACK_QUERY)
-            .bind(track_name)
+            .bind(name)
+            .bind(owner)
             .fetch_one(pool)
             .await
     }

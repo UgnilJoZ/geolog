@@ -37,7 +37,7 @@ async fn get_track(
     track_name: web::Path<String>,
 ) -> Result<Json<Track>, Error> {
     let track_def = db
-        .get_track(track_name.into_inner())
+        .get_track(track_name.into_inner(), auth.username)
         .await?;
     let point_filter = track_def.clone().into();
     let points = db
