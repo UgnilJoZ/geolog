@@ -33,3 +33,11 @@ CREATE TABLE tracks (
 --
 -- You are now able to authenticate using 'Authorization: Token Y3U2eWFoVGgK'
 -- header.
+
+CREATE TABLE trackpermissions (
+	owner text,
+	name text,
+	viewer text,
+	FOREIGN KEY (owner, device) REFERENCES devices(username, name),
+	UNIQUE (ownerm device, viewer)
+);

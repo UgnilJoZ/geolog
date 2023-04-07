@@ -80,7 +80,7 @@ curl -v -H "Content-Type: application/json" -X GET '127.1:8080/points?device=dev
 
 #### Example
 ```sh
-curl -v -H "Content-Type: application/json" -X PUT 127.1:8080/tracks/track1  -H 'Authorization: Token Y3U2eWFoVGgK' -d '{"device":"dev","min_date": "1970-01-01T00:00Z","max_date": "2010-01-01T00:00Z"}
+curl -v -H "Content-Type: application/json" -X PUT 127.1:8080/tracks/track1  -H 'Authorization: Token Y3U2eWFoVGgK' -d '{"device":"dev","min_date": "1970-01-01T00:00Z","max_date": "2010-01-01T00:00Z"}'
 ```
 
 ### `GET /v1/tracks/{name}`
@@ -91,8 +91,8 @@ This will include a point list like returned by `GET /v1/points`.
 {
     "definition": {
         "device": "mobile",
-        "from": "1970-01-01T00:00Z",
-        "to": "1971-01-01 00:00"
+        "min_date": "1970-01-01T00:00Z",
+        "max_date": "1971-01-01Z00:00Z"
     },
     "points": [
         {

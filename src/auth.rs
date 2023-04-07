@@ -5,8 +5,13 @@ use actix_web::{dev::Payload, web::Data, FromRequest, HttpRequest};
 use std::future::Future;
 use std::pin::Pin;
 
-fn strip_prefix<'a>(ascii_str: &'a [u8], prefix: &[u8]) -> Option<&'a [u8]> {
-    let mut remaining = ascii_str;
+/// Strips a prefix from a byte sequence
+///
+/// If `data` starts with `prefix`, returns Some(the remaining sequence).
+///
+/// If `data` does not start with this prefix, returns None.
+fn strip_prefix<'a>(data: &'a [u8], prefix: &[u8]) -> Option<&'a [u8]> {
+    let mut remaining = data;
     for prefix_char in prefix {
         if prefix_char == remaining.first()? {
             remaining = &remaining[1..];
@@ -18,7 +23,11 @@ fn strip_prefix<'a>(ascii_str: &'a [u8], prefix: &[u8]) -> Option<&'a [u8]> {
 }
 
 impl Device {
-    async fn from_request_async(req: HttpRequest) -> Result<Self, Error> {
+    /// Returns an authenticated device
+    ///
+    /// If the http request contains a proper device authentication via Authorization header,
+    /// the device will be returned. Else, the reason why the authentication failed is returned.
+    async fn from_authentication(req: HttpRequest) -> Result<Self, Error> {
         let header_value = req
             .headers()
             .get("Authorization")
@@ -39,6 +48,6 @@ impl FromRequest for Device {
 
     fn from_request(req: &HttpRequest, _payload: &mut Payload) -> Self::Future {
         let req = req.clone();
-        Box::pin(async move { Self::from_request_async(req).await })
+        Box::pin(async move { Self::from_authentication(req).await })
     }
 }
