@@ -8,14 +8,14 @@ CREATE TABLE devices (
 CREATE TABLE points (
 	id bigserial PRIMARY KEY,
 	owner text,
-	coordinates geometry(Point,4326),
+	coordinates geometry(Point, 4326),
 	elevation float,
 	time timestamptz NOT NULL,
 	device text,
 	FOREIGN KEY (owner, device) REFERENCES devices(username, name)
 );
 
-create index locations_point_idx ON points using GIST(coordinates);
+create index ON points using GIST(coordinates);
 
 CREATE TABLE tracks (
 	name text,
@@ -34,10 +34,10 @@ CREATE TABLE tracks (
 -- You are now able to authenticate using 'Authorization: Token Y3U2eWFoVGgK'
 -- header.
 
-CREATE TABLE trackpermissions (
-	owner text,
-	name text,
+CREATE TABLE trackshares (
 	viewer text,
-	FOREIGN KEY (owner, device) REFERENCES devices(username, name),
-	UNIQUE (ownerm device, viewer)
+	owner text,
+	trackname text,
+	FOREIGN KEY (owner, trackname) REFERENCES tracks(owner, name),
+	UNIQUE (viewer, owner, trackname)
 );
