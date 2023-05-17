@@ -13,7 +13,7 @@ async fn insert_points(
     match db.insert_points(points, auth.username).await {
         Ok(()) => HttpResponse::Created().into(),
         Err(e) => {
-            error!("{}", e);
+            error!("{e}");
             HttpResponse::InternalServerError().into()
         }
     }

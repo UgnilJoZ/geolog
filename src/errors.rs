@@ -17,15 +17,17 @@ pub enum Error {
     Base64DecodingError(base64::DecodeError),
     #[error("Database pool not found")]
     DatabaseNotPresent,
-    #[error("Authorization header was unexpected")]
+    #[error("Authorization header had unexpected format. Expected: `Token …`")]
     AuthHeaderMalformed,
 }
 
 impl ResponseError for Error {
     fn status_code(&self) -> StatusCode {
+        use Error::*;
         match self {
-            Error::Unauthenticated => StatusCode::UNAUTHORIZED,
-            Error::Forbidden { .. } => StatusCode::FORBIDDEN,
+            Unauthenticated => StatusCode::UNAUTHORIZED,
+            Forbidden { .. } => StatusCode::FORBIDDEN,
+            AuthHeaderMalformed | Base64DecodingError(_) => StatusCode::BAD_REQUEST,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
