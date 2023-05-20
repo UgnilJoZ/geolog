@@ -76,4 +76,3 @@ pub struct Track {
     pub definition: TrackSpec,
     pub points: Vec<PointRecord>,
 }
-

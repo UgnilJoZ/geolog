@@ -1,16 +1,26 @@
 use actix_web::{middleware::Logger, web, App, HttpServer};
+use std::env;
+use std::io::{Error, ErrorKind, Result};
 mod database;
 mod errors;
 mod types;
 use database::Database;
 mod auth;
 mod endpoints;
-use endpoints::{get_points, insert_points, get_track, insert_track};
+use endpoints::{get_points, get_track, insert_points, insert_track};
 
 #[actix_web::main]
-async fn main() -> std::io::Result<()> {
+async fn main() -> Result<()> {
     pretty_env_logger::init();
-    let db = Database::new().await.unwrap();
+
+    let pg_url = env::var("POSTGRES_URL").map_err(|e| {
+        Error::new(
+            ErrorKind::NotFound,
+            "The environment variable POSTGRES_URL was expected, but not supplied.",
+        )
+    })?;
+
+    let db = Database::new(&pg_url).await.unwrap();
     HttpServer::new(move || {
         App::new()
             .wrap(Logger::default())

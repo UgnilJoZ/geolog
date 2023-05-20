@@ -24,10 +24,8 @@ const EPSG_PROJECTION: i32 = 4326;
 pub struct Database(PgPool);
 
 impl Database {
-    pub async fn new() -> Result<Database, Error> {
-        PgPool::connect("postgresql://localhost/geolog")
-            .await
-            .map(Database)
+    pub async fn new(pg_url: &str) -> Result<Database, Error> {
+        PgPool::connect(pg_url).await.map(Database)
     }
 
     pub async fn get_points(&self, filter: &PointFilter) -> Result<Vec<PointRecord>, Error> {
@@ -185,4 +183,3 @@ impl From<TrackDefinition> for PointFilter {
         }
     }
 }
-

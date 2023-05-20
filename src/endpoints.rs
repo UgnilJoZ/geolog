@@ -36,13 +36,9 @@ async fn get_track(
     auth: Device,
     track_name: web::Path<String>,
 ) -> Result<Json<Track>, Error> {
-    let track_def = db
-        .get_track(track_name.into_inner(), auth.username)
-        .await?;
+    let track_def = db.get_track(track_name.into_inner(), auth.username).await?;
     let point_filter = track_def.clone().into();
-    let points = db
-        .get_points(&point_filter)
-        .await?;
+    let points = db.get_points(&point_filter).await?;
     Ok(Json(Track {
         definition: track_def.spec,
         points,
@@ -60,6 +56,7 @@ async fn insert_track(
         name: track_name.into_inner(),
         owner: auth.username,
         spec: track_spec.into_inner(),
-    }).await?;
+    })
+    .await?;
     Ok(HttpResponse::Created().into())
 }
