@@ -1,8 +1,13 @@
-use crate::database::{Database, PointFilter, TrackDefinition};
+use crate::database::{Database, PointFilter, TrackDefinition, TrackFilter};
 use crate::errors::Error;
 use crate::types::{Device, Point, PointRecord, Track, TrackSpec};
 use actix_web::{get, post, put, web, web::Json, HttpResponse};
 use log::error;
+
+#[get("/devices")]
+async fn list_devices(db: web::Data<Database>, auth: Device) -> Result<Json<Vec<String>>, Error> {
+    Ok(Json(db.list_devices(&auth.username).await?))
+}
 
 #[post("/points")]
 async fn insert_points(
@@ -59,4 +64,15 @@ async fn insert_track(
     })
     .await?;
     Ok(HttpResponse::Created().into())
+}
+
+#[get("/tracks")]
+async fn list_tracks(
+    db: web::Data<Database>,
+    auth: Device,
+    params: web::Query<TrackFilter>,
+) -> Result<Json<Vec<TrackDefinition>>, Error> {
+    let web::Query(mut params) = params;
+    params.owner = auth.username;
+    Ok(Json(db.list_tracks(&params).await?))
 }

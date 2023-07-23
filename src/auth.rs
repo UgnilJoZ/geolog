@@ -31,9 +31,10 @@ impl Device {
         let header_value = req
             .headers()
             .get("Authorization")
-            .ok_or(Error::Unauthenticated)?;
+            .ok_or(Error::Unauthenticated)?
+            .as_bytes();
         let token_string =
-            strip_prefix(header_value.as_bytes(), b"Token ").ok_or(Error::AuthHeaderMalformed)?;
+            strip_prefix(header_value, b"Token ").ok_or(Error::AuthHeaderMalformed)?;
         let token = DeviceToken::from_base64(token_string).map_err(Error::Base64DecodingError)?;
         let db = req
             .app_data::<Data<Database>>()

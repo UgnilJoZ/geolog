@@ -83,6 +83,30 @@ curl -v -H "Content-Type: application/json" -X GET '127.1:8080/points?device=dev
 curl -v -H "Content-Type: application/json" -X PUT 127.1:8080/tracks/track1  -H 'Authorization: Token Y3U2eWFoVGgK' -d '{"device":"dev","min_date": "1970-01-01T00:00Z","max_date": "2010-01-01T00:00Z"}'
 ```
 
+### `GET /v1/tracks`
+Lists all track specs within the given parameters. These are:
+* min_date, max_date: Only consider tracks whose timespan overlaps with this time range
+* device: Limit tracks to the device with the given name
+* limit: Limit to a certain number of result records
+
+<!-- The result contains:
+* A property `tracks` containing the returned tracks sorted by their end times in descending order.
+* A property `exhaustive`, telling that no query limit was reached, hence the list contains all tracks that fulfill the given contstraints. -->
+#### JSON response body
+```json
+[
+  {
+    "name": "track0",
+    "owner": "joz",
+    "spec": {
+      "device": "dev",
+      "min_date": "+001970-01-01T00:00:00.000000000Z",
+      "max_date": "+001971-01-01T00:00:00.000000000Z"
+    }
+  }
+]
+```
+
 ### `GET /v1/tracks/{name}`
 #### JSON response body
 This will include a point list like returned by `GET /v1/points`.

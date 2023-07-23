@@ -1,5 +1,6 @@
 use crate::types::{Coordinates, Device, Point, PointRecord, TimeRange, TrackSpec};
-use serde::Deserialize;
+use log::info;
+use serde::{Deserialize, Serialize};
 use serde_with::{serde_as, DisplayFromStr};
 use sqlx::postgres::{PgPool, PgRow, PgTypeInfo};
 use sqlx::{Error, FromRow, Postgres, QueryBuilder, Row, Type};
@@ -12,11 +13,15 @@ VALUES ($1, ST_SetSRID(ST_MakePoint($2, $3), 4326), $4, $5, $6)";
 
 const DEVICE_QUERY: &str = "SELECT name, username FROM devices WHERE token = $1";
 
+const DEVICE_NAME_QUERY: &str = "SELECT name FROM devices WHERE username = $1";
+
 const TRACK_INSERTION: &str = "INSERT INTO tracks(name, owner, device, min_date, max_date)
 VALUES ($1, $2, $3, $4, $5)";
 
 const TRACK_QUERY: &str = "SELECT name, owner, device, min_date, max_date FROM tracks
 WHERE name = $1 AND owner = $2";
+
+const TRACK_LIST_QUERY: &str = "SELECT name, owner, device, min_date, max_date FROM tracks";
 
 const EPSG_PROJECTION: i32 = 4326;
 
@@ -77,6 +82,24 @@ impl Database {
             .bind(owner)
             .fetch_one(pool)
             .await
+    }
+
+    pub async fn list_devices(&self, owner: &str) -> Result<Vec<String>, Error> {
+        let Database(pool) = self;
+        sqlx::query(DEVICE_NAME_QUERY)
+            .bind(owner)
+            .map(|row: <Postgres as sqlx::Database>::Row| row.get("name"))
+            .fetch_all(pool)
+            .await
+    }
+
+    pub async fn list_tracks(&self, filter: &TrackFilter) -> Result<Vec<TrackDefinition>, Error> {
+        let Database(pool) = self;
+        Ok(filter
+            .pg_selection()
+            .build_query_as()
+            .fetch_all(pool)
+            .await?)
     }
 }
 
@@ -164,7 +187,7 @@ impl FromRow<'_, PgRow> for Point {
     }
 }
 
-#[derive(Clone, FromRow)]
+#[derive(Clone, FromRow, Serialize)]
 pub struct TrackDefinition {
     pub name: String,
     pub owner: String,
@@ -181,5 +204,37 @@ impl From<TrackDefinition> for PointFilter {
             user: track.owner,
             time: Some(track.spec.time),
         }
+    }
+}
+
+#[derive(Deserialize)]
+pub struct TrackFilter {
+    #[serde(skip_deserializing)]
+    pub owner: String,
+    #[serde(flatten)]
+    pub period_overlaps: Option<TimeRange>,
+    pub limit: Option<u16>,
+    pub device: Option<String>,
+}
+
+impl TrackFilter {
+    fn pg_selection(&self) -> QueryBuilder<Postgres> {
+        let mut query = QueryBuilder::new(TRACK_LIST_QUERY);
+        query.push(" WHERE owner = ").push_bind(&self.owner);
+        if let Some(time_range) = &self.period_overlaps {
+            query
+                .push(" AND min_date = ")
+                .push_bind(time_range.min_date)
+                .push(" AND max_date = ")
+                .push_bind(time_range.max_date);
+        }
+        if let Some(device) = &self.device {
+            query.push(" AND device = ").push_bind(device);
+        }
+        if let Some(max_rows) = self.limit {
+            query.push(" LIMIT ").push_bind(max_rows as i32);
+        }
+        query.push(" ORDER BY max_date DESC");
+        query
     }
 }
